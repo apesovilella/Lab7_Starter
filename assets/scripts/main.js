@@ -69,9 +69,15 @@ async function getRecipes() {
   // A1. TODO - Check local storage to see if there are any recipes.
   //            If there are recipes, return them.
   /**************************/
+  const recipesInLocal = JSON.parse(localStorage.getItem('recipes'));
+  if (recipesInLocal != null) {
+    return recipesInLocal;
+  }
   // The rest of this method will be concerned with requesting the recipes
   // from the network
   // A2. TODO - Create an empty array to hold the recipes that you will fetch
+  let fetchedRecipes = [];
+  let recipeURL;
   // A3. TODO - Return a new Promise. If you are unfamiliar with promises, MDN
   //            has a great article on them. A promise takes one parameter - A
   //            function (we call these callback functions). That function will
@@ -81,15 +87,27 @@ async function getRecipes() {
   // A4-A11 will all be *inside* the callback function we passed to the Promise
   // we're returning
   /**************************/
+  const myFirstPromise = new Promise(async function(resolve, reject) {
   // A4. TODO - Loop through each recipe in the RECIPE_URLS array constant
   //            declared above
+    let i = 0;
+    for (let recipe of RECIPE_URLS) {
   // A5. TODO - Since we are going to be dealing with asynchronous code, create
   //            a try / catch block. A6-A9 will be in the try portion, A10-A11
   //            will be in the catch portion.
+      try {
   // A6. TODO - For each URL in that array, fetch the URL - MDN also has a great
   //            article on fetch(). NOTE: Fetches are ASYNCHRONOUS, meaning that
   //            you must either use "await fetch(...)" or "fetch.then(...)". This
   //            function is using the async keyword so we recommend "await"
+        recipeURL = await fetch(recipe);
+        console.log(recipe);
+        await recipeURL.json();
+        fetchedRecipes += recipeURL;
+        i += 1;
+        if (i == 6) {
+          saveRecipesToStorage(fetchedRecipes);
+        }
   // A7. TODO - For each fetch response, retrieve the JSON from it using .json().
   //            NOTE: .json() is ALSO asynchronous, so you will need to use
   //            "await" again
@@ -98,8 +116,16 @@ async function getRecipes() {
   //            if you have, then save the recipes to storage using the function
   //            we have provided. Then, pass the recipes array to the Promise's
   //            resolve() method.
+        resolve(fetchedRecipes);    
+      }
+      catch (error) {
+        console.error(error);
+        reject(error);
   // A10. TODO - Log any errors from catch using console.error
   // A11. TODO - Pass any errors to the Promise's reject() function
+      }
+    }
+  });
 }
 
 /**
